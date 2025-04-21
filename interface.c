@@ -2,58 +2,58 @@
 
 void print_greetings(void)
 {
-    printw("%s:%s$",username,cwd);
+  printf("%s:%s$ ", username, cwd);
+  fflush(stdout); 
 }
 short read_line(char** in, size_t* size)
 {
-    *in = (char*)malloc(ASH_MAX_LENGTH);
-    if (!*in) return ASH_MALLOC_FAILURE;
+  *in = (char*)malloc(ASH_MAX_LENGTH);
+  if (!*in) return ASH_MALLOC_FAILURE;
+  
+  int ch;
+  size_t index = 0;
+  *size = ASH_MAX_LENGTH;
+  
+  while ((ch = getchar()) != '\n' && ch != EOF)
+    {
+      if (ch == 3)
+	{ // Handle Ctrl+C
+	  free(*in);
+	  return ASH_EXIT_SUCCESS;
+        }
 
-    int ch;
-    int index = 0;
-    *size = ASH_MAX_LENGTH;
-
-    while ((ch = getch()) != '\n')
-      {
-        if (ch == 3) return ASH_EXIT_SUCCESS; // Handle Ctrl+C
-
-        if (ch == KEY_BACKSPACE ||
-            ch == 127           ||
-            ch == 8             ||
-            ch == KEY_DC)
-	  {
+      if (ch == 127 || ch == 8)
+	  { // Handle backspace
             if (index > 0)
 	      {
-                int curs_y, curs_x;
-                getyx(stdscr, curs_y, curs_x);
-                move(curs_y, curs_x - 1);
-                addch(' ');
-                move(curs_y, curs_x - 1);
+                printf("\b \b"); // Move cursor back and overwrite the character
                 (*in)[--index] = '\0'; // Correctly handle the input buffer
-            }
+	      }
         }
-	else if (ch >= 32 && ch <= 126)
-	  {
+      else if (ch >= 32 && ch <= 126)
+	{ // Handle printable characters
             if (index < *size - 1)
 	      {
                 (*in)[index++] = ch;
-                printw("%c", ch);
-                refresh();
-            }
+                putchar(ch);
+                fflush(stdout);
+	      }
 	    else
 	      {
                 *size += ASH_MAX_LENGTH;
                 *in = realloc(*in, *size);
                 if (!*in) return ASH_MALLOC_FAILURE;
-
+		
                 (*in)[index++] = ch;
-                printw("%c", ch);
-                refresh();
-            }
+                putchar(ch);
+                fflush(stdout);
+	      }
         }
     }
-
-    (*in)[index] = '\0';
-
-    return OK;
+  
+  (*in)[index] = '\0';
+  putchar('\n'); // Move to the next line after reading input
+  fflush(stdout);
+  
+  return OK;
 }

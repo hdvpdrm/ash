@@ -37,9 +37,50 @@ short cd(char** tokens, size_t size)
 }
 short quit(char** tokens, size_t size)
 {
+  if(size != 1)
+    {
+      strcpy(ash_error_buf,"exit command has no arguments!");
+      return ASH_COMMAND_FAILURE;
+    }
   return ASH_EXIT_SUCCESS;
 }
+short launch(char** tokens, size_t size)
+{
+    if (!tokens || size == 0)
+      {
+        return ASH_NULL_POINTER;
+      }
 
+    pid_t pid, wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0)
+      {
+        // Child process
+        if (execvp(tokens[0], tokens) == -1)
+	  {
+	    perror("ash: execvp");
+	  }
+        exit(EXIT_FAILURE);
+    }
+    else if (pid < 0)
+      {
+        // Fork failed
+        perror("ash: fork");
+        return ASH_NULL_POINTER;
+      }
+    else
+      {
+        // Parent process
+        do
+	  {
+            wpid = waitpid(pid, &status, WUNTRACED);
+	  }
+	while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    return OK;
+}
 short split_input(char** input, char*** output, size_t* size)
 {
     if (!input || !*input) return ASH_NULL_POINTER;
@@ -62,13 +103,13 @@ short split_input(char** input, char*** output, size_t* size)
                 for (size_t i = 0; i < count; i++)
 		  {
                     free((*output)[i]);
-                }
+		  }
 		
                 free(*output);
                 return ASH_MALLOC_FAILURE;
-            }
+	      }
             *output = temp;
-        }
+	  }
         (*output)[count] = strdup(token);
         if (!(*output)[count])
 	  {
@@ -81,8 +122,8 @@ short split_input(char** input, char*** output, size_t* size)
 	  }
         count++;
         token = strtok(NULL, " ");
-    }
-
+      }
+    
     *size = count;
     return OK;
 }
@@ -94,10 +135,16 @@ short invoke_command(char*** tokens,size_t size)
   char** arr = *tokens;
   char* head = arr[0];
   CommandPtr command = GET_COMMAND(head);
-  if(command == NULL)
+  if(command != NULL)
     {
-      return ASH_UNKNOWN_COMMAND;
+      return command(arr,size);
+    }
+
+  if(strcmp(head,"clear") == 0)
+    {
+      launch(arr,size);
+      return ASH_CLEAR;
     }
   
-  return command(arr,size);
+  return launch(arr,size);
 }

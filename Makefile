@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -g -lncurses
+CFLAGS = -Wall -g 
 
 # Source files
 SRCS = main.c interface.c command_invoker.c util.c state.c
