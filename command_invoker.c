@@ -46,40 +46,40 @@ short quit(char** tokens, size_t size)
 }
 short launch(char** tokens, size_t size)
 {
-    if (!tokens || size == 0)
-      {
-        return ASH_NULL_POINTER;
-      }
-
-    pid_t pid, wpid;
-    int status;
-
-    pid = fork();
-    if (pid == 0)
-      {
-        // Child process
-        if (execvp(tokens[0], tokens) == -1)
-	  {
-	    perror("ash: execvp");
-	  }
-        exit(EXIT_FAILURE);
+  if (!tokens || size == 0)
+    {
+      return ASH_NULL_POINTER;
     }
-    else if (pid < 0)
-      {
-        // Fork failed
-        perror("ash: fork");
-        return ASH_NULL_POINTER;
-      }
-    else
-      {
-        // Parent process
-        do
-	  {
-            wpid = waitpid(pid, &status, WUNTRACED);
-	  }
-	while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  pid_t pid,wpid;
+  int status;
+
+  tokens[size] = NULL;
+  pid = fork();
+  if (pid == 0)
+    {
+      // Child process
+      if (execvp(tokens[0], tokens) == -1)
+	{
+	  perror("ash: execvp");
+	}
+      exit(EXIT_FAILURE);
     }
-    return OK;
+  else if (pid < 0)
+    {
+      // Fork failed
+      perror("ash: fork");
+      return ASH_NULL_POINTER;
+    }
+  else
+    {
+      // Parent process
+      do
+	{
+	  wpid = waitpid(pid, &status, WUNTRACED);
+	}
+      while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+  return OK;
 }
 short split_input(char** input, char*** output, size_t* size)
 {
