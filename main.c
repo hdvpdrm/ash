@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	  }
 	else if(result == ASH_NULL_POINTER)
 	  {
-	    printw("\nash : fuck");
+	    printw("\nash : empty");
 	  }
 
 	for(size_t i = 0;i<size;++i)free(tokens[i]);
@@ -42,7 +42,6 @@ int main(int argc, char** argv)
 
 	
 	if(result == ASH_EXIT_SUCCESS)break;
-
 
 	
 	//move down
