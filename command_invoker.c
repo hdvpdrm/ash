@@ -81,6 +81,11 @@ short launch(char** tokens, size_t size)
     }
   return OK;
 }
+short launch_pipeline(char** tokens, size_t size)
+{
+
+}
+
 short split_input(char** input, char*** output, size_t* size)
 {
     if (!input || !*input) return ASH_NULL_POINTER;
@@ -139,12 +144,22 @@ short invoke_command(char*** tokens,size_t size)
     {
       return command(arr,size);
     }
-
-  if(strcmp(head,"clear") == 0)
+  else if(is_pipeline(arr,size))
+    {
+    }  
+  else if(strcmp(head,"clear") == 0)
     {
       launch(arr,size);
       return ASH_CLEAR;
     }
-  
+
   return launch(arr,size);
+}
+bool is_pipeline(char** tokens, size_t size)
+{
+  for(size_t i = 0;i<size;++i)
+    {
+      if(strcmp(tokens[i],"|") == 0) return true;
+    }
+  return false;
 }

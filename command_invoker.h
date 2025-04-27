@@ -1,6 +1,7 @@
 #ifndef COMMAND_INVOKER_H
 #define COMMAND_INVOKER_H
 #include<sys/wait.h>
+#include<stdbool.h>
 #include"interface.h"
 #include"util.h"
 #include"state.h"
@@ -20,8 +21,12 @@ extern short cd(char** tokens, size_t size);
 extern short quit(char** tokens, size_t size);
 
 extern short launch(char** tokens, size_t size);
+extern short launch_pipeline(char** tokens, size_t size);
 
 extern short split_input(char** input,char*** output, size_t* size);
 extern short invoke_command(char*** tokens,size_t size);
+
+extern bool is_pipeline(char** tokens, size_t size);
+extern short split_pipeline(char** tokens, char*** out, size_t size);
 
 #endif
